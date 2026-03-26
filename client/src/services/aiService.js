@@ -1,4 +1,4 @@
 import api from './api';
 
-export const sendMessage = (message, context = {}) =>
-  api.post('/ai/chat', { message, context }).then((r) => r.data);
+export const sendAiMessage = (message, loads = []) =>
+  api.post('/ai/chat', { message, loads }).then((r) => r.data);

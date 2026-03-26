@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getAvailableLoads, acceptLoad } from '../services/loadService';
+import { sendAiMessage } from '../services/aiService';
 import Navbar from '../components/Navbar';
 import './LoadMatchingPage.css';
 
@@ -32,9 +33,97 @@ const fmtDate = (iso) =>
     ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '—';
 
+// ── AI Panel ───────────────────────────────────────────────────────────────
+
+const AiPanel = ({ loads, onClose, onResult }) => {
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null); // { text, recommendedIds }
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true);
+    setError('');
+    setResult(null);
+    try {
+      const data = await sendAiMessage(query.trim(), loads);
+      setResult(data);
+      onResult(data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'AI request failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="ai-panel" role="region" aria-label="AI Load Matching">
+      <div className="container">
+        <div className="ai-panel__inner">
+          <div className="ai-panel__header">
+            <div className="ai-panel__title">
+              <span className="ai-panel__icon">🤖</span>
+              AI Load Matching
+            </div>
+            <button
+              type="button"
+              className="ai-panel__close"
+              onClick={onClose}
+              aria-label="Close AI panel"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form className="ai-panel__form" onSubmit={handleSubmit}>
+            <textarea
+              ref={textareaRef}
+              className="ai-panel__input"
+              placeholder="Describe what you're looking for… e.g. &quot;I'm in Chicago with a flatbed, looking for loads paying at least $2,500 going south&quot;"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setError(''); }}
+              rows={2}
+              aria-label="Describe your load preferences"
+            />
+            <button
+              type="submit"
+              className="btn-primary ai-panel__submit"
+              disabled={loading || !query.trim()}
+            >
+              {loading ? <><span className="spinner" /> Thinking…</> : 'Find My Load'}
+            </button>
+          </form>
+
+          {error && (
+            <div className="ai-panel__error" role="alert">{error}</div>
+          )}
+
+          {result && (
+            <div className="ai-panel__result">
+              <p className="ai-panel__result-text">{result.text}</p>
+              {result.recommendedIds?.length > 0 && (
+                <p className="ai-panel__result-hint">
+                  ⭐ {result.recommendedIds.length} load{result.recommendedIds.length > 1 ? 's' : ''} highlighted below
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Load card ──────────────────────────────────────────────────────────────
 
-const LoadCard = ({ load, isDriver, onAccepted }) => {
+const LoadCard = ({ load, isDriver, isAiPick, onAccepted }) => {
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,7 +141,11 @@ const LoadCard = ({ load, isDriver, onAccepted }) => {
   };
 
   return (
-    <div className="match-card">
+    <div className={`match-card ${isAiPick ? 'match-card--ai-pick' : ''}`}>
+      {isAiPick && (
+        <div className="match-card__ai-badge">⭐ AI Recommended</div>
+      )}
+
       {/* Route + Pay */}
       <div className="match-card__header">
         <div className="match-card__route">
@@ -135,6 +228,8 @@ const LoadMatchingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiRecommendedIds, setAiRecommendedIds] = useState([]);
 
   // Filter inputs — NOT wired to auto-fetch; only fire on Search click or Enter
   const [pickupCity, setPickupCity] = useState('');
@@ -155,6 +250,7 @@ const LoadMatchingPage = () => {
     try {
       const data = await getAvailableLoads(params, signal);
       setLoads(data);
+      setAiRecommendedIds([]); // clear AI picks when loads change
     } catch (err) {
       if (err.name === 'CanceledError' || err.name === 'AbortError') return;
       setError(
@@ -184,10 +280,22 @@ const LoadMatchingPage = () => {
 
   const handleAccepted = (loadId) => {
     setLoads((prev) => prev.filter((l) => l._id !== loadId));
+    setAiRecommendedIds((prev) => prev.filter((id) => id !== loadId));
+  };
+
+  const handleAiResult = ({ recommendedIds = [] }) => {
+    setAiRecommendedIds(recommendedIds);
   };
 
   const hasFilters = pickupCity || deliveryCity || truckType;
-  const sortedLoads = sortLoads(loads, sortBy);
+  const aiPickSet = new Set(aiRecommendedIds);
+
+  // AI-recommended loads float to the top
+  const sortedLoads = sortLoads(loads, sortBy).sort((a, b) => {
+    const aIsPick = aiPickSet.has(a._id) ? 0 : 1;
+    const bIsPick = aiPickSet.has(b._id) ? 0 : 1;
+    return aIsPick - bIsPick;
+  });
 
   return (
     <div className="load-matching">
@@ -203,23 +311,36 @@ const LoadMatchingPage = () => {
               <p className="load-matching__sub">Browse open freight across the US</p>
             </div>
 
-            {/* AI Match banner — wired up in Step 7 */}
+            {/* AI Match banner — drivers only */}
             {isDriver && (
               <div className="ai-banner">
                 <span className="ai-banner__icon">🤖</span>
                 <div className="ai-banner__text">
                   <div className="ai-banner__title">AI Load Matching</div>
                   <div className="ai-banner__sub">
-                    Smart recommendations based on your route — coming in Step 7
+                    Describe your situation — Claude finds the best loads for you
                   </div>
                 </div>
-                <button type="button" className="ai-banner__btn" disabled>
-                  Ask AI
+                <button
+                  type="button"
+                  className={`ai-banner__btn ${aiOpen ? 'ai-banner__btn--active' : ''}`}
+                  onClick={() => setAiOpen((o) => !o)}
+                >
+                  {aiOpen ? 'Close AI' : 'Ask AI'}
                 </button>
               </div>
             )}
           </div>
         </section>
+
+        {/* ── AI Panel ──────────────────────────────────────── */}
+        {aiOpen && isDriver && (
+          <AiPanel
+            loads={loads}
+            onClose={() => setAiOpen(false)}
+            onResult={handleAiResult}
+          />
+        )}
 
         {/* ── Sticky filter bar ─────────────────────────────── */}
         <div className="load-matching__filters-wrap">
@@ -282,6 +403,11 @@ const LoadMatchingPage = () => {
               <span className="results-count">
                 {sortedLoads.length}{' '}
                 {sortedLoads.length === 1 ? 'load' : 'loads'} available
+                {aiPickSet.size > 0 && (
+                  <span className="results-ai-count">
+                    {' '}· {aiPickSet.size} AI recommended
+                  </span>
+                )}
               </span>
               <select
                 className="sort-select"
@@ -326,6 +452,7 @@ const LoadMatchingPage = () => {
                   key={load._id}
                   load={load}
                   isDriver={isDriver}
+                  isAiPick={aiPickSet.has(load._id)}
                   onAccepted={handleAccepted}
                 />
               ))}

@@ -4,116 +4,84 @@
 
 ---
 
-## BUG-S6-C1 — Accept button spinner never stops on success
-
-**File:** client/src/pages/LoadMatchingPage.jsx — LoadCard component
+## BUG-S6-C1 — Spinner permanently stuck on success path
+**File:** client/src/pages/LoadMatchingPage.jsx — LoadCard handleAccept
 **Severity:** Critical
-**Problem:** `setAccepting(false)` was only called in the catch block.
-On the happy path, `onAccepted(load._id)` removed the card from the list,
-which normally unmounts the component before the stuck state matters.
-But if the parent re-render kept the card mounted (e.g., a refresh failed
-after accept), the button would stay permanently disabled with a spinner.
-**Fix:** Added `setAccepting(false)` immediately before `onAccepted(load._id)`
-in the try block so the button always unlocks before the card is removed.
+**Problem:** setAccepting(false) was never called on the success path.
+If parent re-render kept the card mounted after accept, the button
+stayed permanently disabled with a spinning spinner.
+**Fix:** Added setAccepting(false) before onAccepted(load._id) in the
+try block so it fires reliably on success regardless of re-render timing.
 
 ---
 
-## BUG-S6-M1 — Race condition: stale search results overwriting newer ones
-
-**File:** client/src/pages/LoadMatchingPage.jsx — fetchLoads
+## BUG-S6-M1 — Sticky filter bar offset wrong
+**File:** client/src/pages/LoadMatchingPage.css line 85
 **Severity:** Medium
-**Problem:** No request cancellation. If a user searched "Chicago" then
-immediately searched "Dallas" before the first response returned, both
-requests were in flight. Whichever resolved last would win — potentially
-showing results for the wrong search query.
-**Fix:** Added `useRef` to store an `AbortController`. Every call to
-`fetchLoads` aborts the previous in-flight request before starting a new
-one. Axios forwards the `signal` to the fetch, so cancelled requests
-throw a `CanceledError` which is silently swallowed (not shown as an error
-to the user). `loadService.getAvailableLoads()` updated to accept and
-forward the `signal` parameter.
+**Problem:** top: 64px but navbar is actually 68px tall. Filter bar
+partially slid behind the navbar bottom edge on scroll.
+**Fix:** Changed to top: 68px to match actual navbar height.
 
 ---
 
-## BUG-S6-M2 — Sticky filter bar misaligned behind navbar
-
-**File:** client/src/pages/LoadMatchingPage.css
-**Severity:** Medium
-**Problem:** Filter bar `top: 64px` but the Navbar is `height: 68px`
-(confirmed in Navbar.css). The 4px gap caused the filter bar to slide
-4px behind the navbar bottom edge when scrolling, making the top border
-of the filter bar invisible under the navbar.
-**Fix:** Changed `top: 64px` to `top: 68px`.
-
----
-
-## BUG-S6-M3 — Missing CSS variables --gray-300, --gray-500, --gray-700
-
+## BUG-S6-M2 — Missing gray CSS variables in design system
 **File:** client/src/index.css
 **Severity:** Medium
-**Problem:** `LoadMatchingPage.css` used `--gray-300` (card hover border),
-`--gray-500` (pay rate text), and `--gray-700` (tag text). None of these
-were defined in `index.css`. Browsers silently fall back to `inherit` or
-an empty value, producing wrong colors.
-**Fix:** Added the three missing variables to the `:root` block in
-`index.css`:
-- `--gray-300: #cbd5e1`
-- `--gray-500: #64748b`
-- `--gray-700: #334155`
+**Problem:** --gray-300, --gray-500, --gray-700 used in
+LoadMatchingPage.css but not defined in index.css. Browser
+silently fell back to inherited colors.
+**Fix:** Added all three missing variables to the :root block:
+--gray-300: #cbd5e1, --gray-500: #64748b, --gray-700: #334155
 
 ---
 
-## BUG-S6-M4 — Truck type select not disabled during loading
-
+## BUG-S6-M3 — Truck type select not disabled during loading
 **File:** client/src/pages/LoadMatchingPage.jsx
 **Severity:** Medium
-**Problem:** During a fetch, the Search button and text inputs were
-effectively locked (Search shows spinner), but the truck type `<select>`
-had no `disabled` attribute. A user could change the truck type while a
-request was in flight, creating inconsistency between what was searched
-and what would be displayed.
-**Fix:** Added `disabled={loading}` to the truck type select element,
-matching the disabled state of the Search button.
+**Problem:** Text inputs and Search button were locked during loading
+but the truck type select remained interactive, allowing changes
+mid-request that would be ignored.
+**Fix:** Added disabled={loading} to the truck type select element.
 
 ---
 
-## BUG-S6-N1 — Enter key handlers missing e.preventDefault()
+## BUG-S6-M4 — Stale search results from race condition
+**File:** client/src/pages/LoadMatchingPage.jsx + client/src/services/loadService.js
+**Severity:** Medium
+**Problem:** No request cancellation. If two searches fired quickly,
+the slower first response could overwrite the faster second response,
+showing stale results to the user.
+**Fix:** Added AbortController via useRef. Each new search cancels
+the previous in-flight request. loadService forwards the signal to
+Axios. AbortError/CanceledError caught and ignored silently.
 
+---
+
+## BUG-S6-N1 — Missing e.preventDefault() on Enter handlers
 **File:** client/src/pages/LoadMatchingPage.jsx
 **Severity:** Minor
-**Problem:** `onKeyDown` handlers on the two text inputs called
-`handleSearch()` directly without calling `e.preventDefault()` first.
-If these inputs were ever moved inside a `<form>`, the default Enter
-behavior would fire a form submission in addition to the search.
-**Fix:** Changed both handlers to the explicit form:
-`if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }`
+**Problem:** onKeyDown handlers called handleSearch() without
+preventDefault. Pressing Enter could have unintended side effects
+if the component is ever wrapped in a form.
+**Fix:** Added e.preventDefault() before handleSearch() in all
+onKeyDown handlers on filter inputs.
 
 ---
 
-## BUG-S6-N2 — Filter buttons missing :disabled visual styles
-
+## BUG-S6-N2 — Disabled state not visually communicated on filter buttons
 **File:** client/src/pages/LoadMatchingPage.css
 **Severity:** Minor
-**Problem:** When `loading=true`, the Search and Clear buttons have
-`disabled` set, but there were no `:disabled` CSS rules. The buttons
-inherited `.btn-primary:hover` transform/color transitions while visually
-appearing active, giving no feedback that they were locked.
-**Fix:** Added:
-```css
-.filter-search-btn:disabled,
-.filter-reset-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-```
+**Problem:** Filter buttons had no disabled styling — the locked
+state during loading was not visually communicated to the user.
+**Fix:** Added .filter-search-btn:disabled and .filter-reset-btn:disabled
+rules with opacity: 0.6 and cursor: not-allowed.
 
 ---
 
 ## Summary
 
 | Severity | Count | Status |
-|----------|-------|--------|
+|---|---|---|
 | Critical | 1 | Fixed |
 | Medium | 4 | All fixed |
 | Minor | 2 | All fixed |

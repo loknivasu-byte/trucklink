@@ -16,7 +16,7 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 | Step 4 | Driver Dashboard | ✅ Complete |
 | Step 5 | Shipper Dashboard | ✅ Complete |
 | Step 6 | Load Matching Page | ✅ Complete |
-| Step 7 | Connect Claude API | ⬜ Pending |
+| Step 7 | Connect Claude API | ✅ Complete |
 | Step 8 | Simulated Escrow Payment | ⬜ Pending |
 
 ---
@@ -145,10 +145,10 @@ Border radius: 8px (--radius), 16px (--radius-lg)
 
 ---
 
-## Next Session — Step 7: Connect Claude API
+## Next Session — Step 8: Simulated Escrow Payment
 
-Wire up the AI Load Matching feature:
-- Connect POST /api/ai/chat to Anthropic Claude API
-- Driver types a natural-language query on the Load Matching Page
-- Claude returns ranked load recommendations from the available set
-- Enable the "Ask AI" button in the AI banner on LoadMatchingPage
+Build the escrow payment simulation:
+- Auto-release payment 2 hours after delivery confirmation (already scheduled in routes/loads.js)
+- Payment history page or modal for drivers to see earned payments
+- Payment status timeline on load cards (in_escrow → released)
+- Admin/owner view of all payments
