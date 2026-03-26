@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -19,6 +20,7 @@ const app = express();
 connectDB();
 
 // Middleware
+app.use(helmet());
 const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
@@ -47,6 +49,9 @@ app.get('/api/health', (req, res) => {
 // Global error handler — catches errors passed via next(err) or unhandled throws
 app.use((err, req, res, next) => {
   console.error(`[Error] ${req.method} ${req.path} —`, err.message);
+  if (err.name === 'CastError') {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
   res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
 });
 

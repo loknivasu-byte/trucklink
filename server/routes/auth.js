@@ -75,7 +75,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     if (user.role !== role) {
-      return res.status(403).json({ message: `This account is registered as a ${user.role}, not a ${role}` });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const isMatch = await user.matchPassword(password);

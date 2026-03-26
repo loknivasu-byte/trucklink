@@ -32,6 +32,11 @@ router.post('/release/:loadId', protect, requireRole('shipper'), async (req, res
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
     if (payment.status === 'released') return res.status(400).json({ message: 'Payment already released' });
 
+    const load = await Load.findById(req.params.loadId);
+    if (!load || load.status !== 'delivered') {
+      return res.status(400).json({ message: 'Payment can only be released after delivery is confirmed' });
+    }
+
     payment.status = 'released';
     payment.releasedAt = new Date();
     await payment.save();
@@ -62,6 +67,13 @@ router.get('/status/:loadId', protect, async (req, res, next) => {
 
     if (!payment) return res.status(404).json({ message: 'Payment record not found' });
 
+    const isShipper = payment.shipper?.toString() === req.user._id.toString();
+    const isDriver = payment.driver?.toString() === req.user._id.toString();
+    const isOwner = req.user.role === 'owner';
+    if (!isShipper && !isDriver && !isOwner) {
+      return res.status(403).json({ message: 'Not authorized to view this payment' });
+    }
+
     // Calculate time remaining until auto-release
     let minutesUntilRelease = null;
     if (payment.scheduledReleaseAt && payment.status !== 'released') {
@@ -70,6 +82,21 @@ router.get('/status/:loadId', protect, async (req, res, next) => {
     }
 
     res.json({ ...payment.toObject(), minutesUntilRelease });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/payments/all - Owner sees all payments across the platform
+router.get('/all', protect, requireRole('owner'), async (req, res, next) => {
+  try {
+    const payments = await Payment.find()
+      .populate('load', 'pickupCity deliveryCity miles totalPay status')
+      .populate('shipper', 'name companyName')
+      .populate('driver', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(payments);
   } catch (err) {
     next(err);
   }

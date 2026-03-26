@@ -6,7 +6,7 @@ import {
   acceptLoad,
   updateLoadStatus,
 } from '../services/loadService';
-import { getPaymentStatus } from '../services/paymentService';
+import { getPaymentStatus, getMyPayments } from '../services/paymentService';
 import Navbar from '../components/Navbar';
 import './DriverDashboard.css';
 
@@ -62,10 +62,12 @@ const EscrowTimer = ({ loadId }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     setLoading(true);
     getPaymentStatus(loadId)
-      .then((data) => { setInfo(data); setLoading(false); })
-      .catch(() => { setError(true); setLoading(false); });
+      .then((data) => { if (isMounted) { setInfo(data); setLoading(false); } })
+      .catch(() => { if (isMounted) { setError(true); setLoading(false); } });
+    return () => { isMounted = false; };
   }, [loadId]);
 
   if (loading) {
@@ -224,6 +226,61 @@ const AvailableLoadCard = ({ load, onAccept, accepting }) => (
   </div>
 );
 
+// ── Earnings payment row ───────────────────────────────────────────────────
+
+const PAYMENT_STATUS_LABEL = {
+  pending: 'Pending',
+  in_escrow: 'In Escrow',
+  released: 'Released',
+  refunded: 'Refunded',
+};
+
+const EarningRow = ({ payment }) => {
+  const load = payment.load;
+  const isReleased = payment.status === 'released';
+  const isEscrow = payment.status === 'in_escrow';
+
+  return (
+    <div className={`earning-row earning-row--${payment.status}`}>
+      <div className="earning-row__route">
+        {load ? (
+          <>
+            <span className="earning-row__city">{load.pickupCity}</span>
+            <span className="earning-row__arrow">→</span>
+            <span className="earning-row__city">{load.deliveryCity}</span>
+          </>
+        ) : (
+          <span className="earning-row__no-load">Load removed</span>
+        )}
+      </div>
+
+      <div className="earning-row__details">
+        {load && (
+          <span className="earning-row__meta">{load.miles?.toLocaleString() ?? '—'} mi</span>
+        )}
+        <span className={`earning-status earning-status--${payment.status}`}>
+          {PAYMENT_STATUS_LABEL[payment.status] ?? payment.status}
+        </span>
+      </div>
+
+      <div className="earning-row__right">
+        <span className={`earning-amount ${isReleased ? 'earning-amount--released' : ''}`}>
+          ${payment.amount?.toLocaleString() ?? '—'}
+        </span>
+        <span className="earning-row__date">
+          {isReleased && payment.releasedAt
+            ? `Released ${new Date(payment.releasedAt).toLocaleDateString()}`
+            : isEscrow && payment.scheduledReleaseAt
+            ? `Auto-releases ${new Date(payment.scheduledReleaseAt).toLocaleString()}`
+            : payment.createdAt
+            ? new Date(payment.createdAt).toLocaleDateString()
+            : ''}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 const DriverDashboard = () => {
@@ -239,6 +296,10 @@ const DriverDashboard = () => {
   const [accepting, setAccepting] = useState(null);
   const [filters, setFilters] = useState({ pickupCity: '', deliveryCity: '', truckType: '' });
   const [activeTab, setActiveTab] = useState('available');
+
+  const [earnings, setEarnings] = useState([]);
+  const [loadingEarnings, setLoadingEarnings] = useState(true);
+  const [earningsError, setEarningsError] = useState('');
 
   // Accepts params directly — no filter dependency, no auto-refetch on typing
   const fetchAvailableLoads = useCallback(async (params = {}) => {
@@ -272,9 +333,25 @@ const DriverDashboard = () => {
     }
   }, []);
 
+  const fetchEarnings = useCallback(async () => {
+    setLoadingEarnings(true);
+    setEarningsError('');
+    try {
+      const data = await getMyPayments();
+      setEarnings(data);
+    } catch (err) {
+      setEarningsError(
+        err.response?.data?.message || 'Failed to load earnings. Please try again.'
+      );
+    } finally {
+      setLoadingEarnings(false);
+    }
+  }, []);
+
   // Fetch once on mount only
   useEffect(() => { fetchActiveLoads(); }, [fetchActiveLoads]);
   useEffect(() => { fetchAvailableLoads(); }, [fetchAvailableLoads]);
+  useEffect(() => { fetchEarnings(); }, [fetchEarnings]);
 
   const handleAccept = async (loadId) => {
     setAccepting(loadId);
@@ -315,6 +392,14 @@ const DriverDashboard = () => {
   const inProgressLoads = activeLoads.filter((l) => l.status !== 'delivered');
   const deliveredLoads = activeLoads.filter((l) => l.status === 'delivered');
 
+  const totalEarned = earnings
+    .filter((p) => p.status === 'released')
+    .reduce((s, p) => s + (p.amount ?? 0), 0);
+  const inEscrowTotal = earnings
+    .filter((p) => p.status === 'in_escrow')
+    .reduce((s, p) => s + (p.amount ?? 0), 0);
+  const inEscrowCount = earnings.filter((p) => p.status === 'in_escrow').length;
+
   return (
     <div className="driver-dashboard">
       <Navbar />
@@ -354,6 +439,15 @@ const DriverDashboard = () => {
               My Loads
               {inProgressLoads.length > 0 && (
                 <span className="tab-badge tab-badge--orange">{inProgressLoads.length}</span>
+              )}
+            </button>
+            <button
+              className={`dashboard-tab ${activeTab === 'earnings' ? 'dashboard-tab--active' : ''}`}
+              onClick={() => setActiveTab('earnings')}
+            >
+              Earnings
+              {inEscrowCount > 0 && (
+                <span className="tab-badge tab-badge--orange">{inEscrowCount}</span>
               )}
             </button>
           </div>
@@ -489,6 +583,56 @@ const DriverDashboard = () => {
                   </>
                 )}
               </>
+            )}
+          </section>
+        )}
+        {/* ── Earnings tab ─────────────────────────────────────── */}
+        {activeTab === 'earnings' && (
+          <section className="container dashboard-section">
+            {/* Summary row */}
+            <div className="earnings-summary">
+              <div className="earnings-summary__item">
+                <span className="earnings-summary__label">Total Earned</span>
+                <span className="earnings-summary__value earnings-summary__value--green">
+                  ${totalEarned.toLocaleString()}
+                </span>
+              </div>
+              <div className="earnings-summary__divider" />
+              <div className="earnings-summary__item">
+                <span className="earnings-summary__label">In Escrow</span>
+                <span className="earnings-summary__value earnings-summary__value--escrow">
+                  ${inEscrowTotal.toLocaleString()}
+                </span>
+              </div>
+              <div className="earnings-summary__divider" />
+              <div className="earnings-summary__item">
+                <span className="earnings-summary__label">Payments</span>
+                <span className="earnings-summary__value">{earnings.length}</span>
+              </div>
+            </div>
+
+            {loadingEarnings ? (
+              <div className="loading-state">
+                <div className="loading-spinner" />
+                <p>Loading earnings…</p>
+              </div>
+            ) : earningsError ? (
+              <div className="error-state" role="alert">
+                <span className="error-state__icon">⚠️</span>
+                <p>{earningsError}</p>
+                <button className="btn-outline" onClick={fetchEarnings}>Try Again</button>
+              </div>
+            ) : earnings.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-state__icon">💰</span>
+                <p>No payments yet. Accept and complete a load to start earning.</p>
+              </div>
+            ) : (
+              <div className="earnings-list">
+                {earnings.map((payment) => (
+                  <EarningRow key={payment._id} payment={payment} />
+                ))}
+              </div>
             )}
           </section>
         )}

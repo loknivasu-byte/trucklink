@@ -17,7 +17,8 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 | Step 5 | Shipper Dashboard | ✅ Complete |
 | Step 6 | Load Matching Page | ✅ Complete |
 | Step 7 | Connect Claude API | ✅ Complete |
-| Step 8 | Simulated Escrow Payment | ⬜ Pending |
+| Step 8 | Simulated Escrow Payment | ✅ Complete |
+| Step 9 | Ratings & Reviews | ⬜ Pending |
 
 ---
 
@@ -53,6 +54,7 @@ cd ~/Desktop/TruckLink/client && npm run dev
 | Auth | JWT (stored in localStorage as `trucklink_user`) |
 | AI | Claude API — Anthropic (Step 7) |
 | Payment | Simulated escrow (no real money) |
+| Security | Helmet, express-rate-limit, CORS |
 
 ---
 
@@ -79,13 +81,18 @@ client/src/
   services/api.js           — Axios instance, auto-attaches JWT
   services/authService.js   — Login / register API calls
   services/loadService.js   — Load CRUD API calls
+  services/paymentService.js — Payment + escrow API calls
   services/aiService.js     — Claude AI chat API calls
   pages/LandingPage.jsx     — Landing page (Step 2)
+  pages/DriverDashboard.jsx — Driver view: find loads, my loads, earnings tab
+  pages/ShipperDashboard.jsx — Shipper view: my shipments, post load, release payment
+  pages/OwnerDashboard.jsx  — Admin view: all payments table + platform stats
+  pages/LoadMatchingPage.jsx — AI-powered load search (Step 6+7)
   components/Navbar.jsx     — Sticky navbar with role-aware links
   components/Footer.jsx     — Footer with link columns
 
 server/
-  server.js                 — Express entry point
+  server.js                 — Express entry point (helmet, cors, rate limit, error handler)
   config/db.js              — MongoDB connection
   models/User.js            — Driver / Shipper / Owner schema
   models/Load.js            — Freight load schema
@@ -93,7 +100,7 @@ server/
   routes/auth.js            — POST /api/auth/login|register
   routes/loads.js           — GET/POST/PUT /api/loads
   routes/payments.js        — GET/POST /api/payments
-  routes/ai.js              — POST /api/ai/chat (placeholder)
+  routes/ai.js              — POST /api/ai/chat
   middleware/authMiddleware.js — JWT protect + requireRole
   seed/seedData.js          — Sample US freight data
 ```
@@ -114,10 +121,11 @@ PUT    /api/loads/:id/accept      — Accept a load (driver only)
 PUT    /api/loads/:id/status      — Update status: accepted→in_transit→delivered
 
 GET    /api/payments/my           — Payment history for current user
-POST   /api/payments/release/:id  — Release escrow payment (shipper)
-GET    /api/payments/status/:id   — Escrow status + time until auto-release
+POST   /api/payments/release/:id  — Release escrow payment (shipper, requires delivered status)
+GET    /api/payments/status/:id   — Escrow status + time until auto-release (owner/shipper/driver only)
+GET    /api/payments/all          — All platform payments (owner only)
 
-POST   /api/ai/chat               — AI assistant (connected in Step 7)
+POST   /api/ai/chat               — AI assistant (Claude API)
 ```
 
 ---
@@ -127,6 +135,17 @@ POST   /api/ai/chat               — AI assistant (connected in Step 7)
 - Never mask errors with silent try/catch
 - Never use workarounds that hide the real issue
 - Explain WHY the error happened before fixing it
+
+---
+
+## Security Measures (as of Step 8)
+- `helmet()` — security headers on all responses
+- `express-rate-limit` — 10 req/15 min on auth routes
+- RegExp inputs escaped before filter queries (ReDoS prevention)
+- Generic `"Invalid email or password"` for all login failures (no enumeration)
+- Payment release blocked unless load status is `delivered`
+- Payment status endpoint validates shipper/driver/owner ownership
+- `requireRole` null-checks `req.user` defensively
 
 ---
 
@@ -145,10 +164,22 @@ Border radius: 8px (--radius), 16px (--radius-lg)
 
 ---
 
-## Next Session — Step 8: Simulated Escrow Payment
+## Next Session — Step 9: Ratings & Reviews
 
-Build the escrow payment simulation:
-- Auto-release payment 2 hours after delivery confirmation (already scheduled in routes/loads.js)
-- Payment history page or modal for drivers to see earned payments
-- Payment status timeline on load cards (in_escrow → released)
-- Admin/owner view of all payments
+Build a mutual rating system triggered after payment is released:
+
+- **Driver rates Shipper** (1–5 stars) → updates `shipper.rating`
+- **Shipper rates Driver** (1–5 stars) → updates `driver.trustScore`
+- Rating prompt appears on delivered load cards (after payment released)
+- One rating per load per direction — can't rate twice
+- Rating average calculated from all past ratings, not just last
+- Owner dashboard shows platform-wide average trust and rating scores
+
+### New files needed
+```
+server/models/Rating.js           — { load, rater, ratee, role, score, comment }
+server/routes/ratings.js          — POST /api/ratings, GET /api/ratings/:userId
+client/src/services/ratingService.js
+client/src/pages/DriverDashboard.jsx  — add RateShipper component on delivered+paid loads
+client/src/pages/ShipperDashboard.jsx — add RateDriver component on delivered+paid loads
+```

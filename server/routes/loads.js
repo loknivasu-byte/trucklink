@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Load = require('../models/Load');
 const Payment = require('../models/Payment');
+const User = require('../models/User');
 const { protect, requireRole } = require('../middleware/authMiddleware');
 
 // GET /api/loads - Get all available loads (any authenticated user can browse)
@@ -9,9 +10,10 @@ router.get('/', protect, async (req, res, next) => {
   try {
     const { pickupCity, deliveryCity, truckType } = req.query;
     const filter = { status: 'available' };
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    if (pickupCity) filter.pickupCity = new RegExp(pickupCity, 'i');
-    if (deliveryCity) filter.deliveryCity = new RegExp(deliveryCity, 'i');
+    if (pickupCity) filter.pickupCity = new RegExp(escapeRegex(pickupCity), 'i');
+    if (deliveryCity) filter.deliveryCity = new RegExp(escapeRegex(deliveryCity), 'i');
     if (truckType) filter.truckType = truckType;
 
     const loads = await Load.find(filter)
@@ -64,7 +66,7 @@ router.get('/:id', protect, async (req, res, next) => {
     }
 
     if (load.status !== 'available') {
-      const isShipper = load.shipper._id.toString() === req.user._id.toString();
+      const isShipper = load.shipper?._id?.toString() === req.user._id.toString();
       const isDriver = load.driver && load.driver._id.toString() === req.user._id.toString();
       const isOwner = req.user.role === 'owner';
       if (!isShipper && !isDriver && !isOwner) {
@@ -115,13 +117,18 @@ router.post('/', protect, requireRole('shipper'), async (req, res, next) => {
     });
 
     // Automatically create an escrow payment record
-    await Payment.create({
-      load: load._id,
-      shipper: req.user._id,
-      amount: totalPay,
-      status: 'in_escrow',
-      escrowDepositedAt: new Date(),
-    });
+    try {
+      await Payment.create({
+        load: load._id,
+        shipper: req.user._id,
+        amount: totalPay,
+        status: 'in_escrow',
+        escrowDepositedAt: new Date(),
+      });
+    } catch (paymentErr) {
+      await Load.findByIdAndDelete(load._id);
+      return next(paymentErr);
+    }
 
     const populated = await load.populate('shipper', 'name companyName rating');
     res.status(201).json(populated);
@@ -145,7 +152,14 @@ router.put('/:id/accept', protect, requireRole('driver'), async (req, res, next)
     }
 
     // Link driver to payment record
-    await Payment.findOneAndUpdate({ load: load._id }, { driver: req.user._id });
+    const payment = await Payment.findOneAndUpdate(
+      { load: load._id },
+      { driver: req.user._id },
+      { new: true }
+    );
+    if (!payment) {
+      return res.status(500).json({ message: 'Payment record not found for this load' });
+    }
 
     const populated = await load.populate([
       { path: 'shipper', select: 'name companyName rating' },
@@ -161,6 +175,9 @@ router.put('/:id/accept', protect, requireRole('driver'), async (req, res, next)
 router.put('/:id/status', protect, requireRole('driver'), async (req, res, next) => {
   try {
     const { status } = req.body;
+
+    if (!status) return res.status(400).json({ message: 'Status field is required' });
+
     const load = await Load.findById(req.params.id);
 
     if (!load) return res.status(404).json({ message: 'Load not found' });
@@ -183,6 +200,8 @@ router.put('/:id/status', protect, requireRole('driver'), async (req, res, next)
 
     if (status === 'delivered') {
       load.deliveryConfirmedAt = new Date();
+
+      await User.findByIdAndUpdate(req.user._id, { $inc: { totalDeliveries: 1 } });
 
       // Schedule payment release 2 hours from now
       const releaseTime = new Date(Date.now() + 2 * 60 * 60 * 1000);

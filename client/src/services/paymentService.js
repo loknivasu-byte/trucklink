@@ -8,3 +8,6 @@ export const getMyPayments = () =>
 
 export const releasePayment = (loadId) =>
   api.post(`/payments/release/${loadId}`).then((r) => r.data);
+
+export const getAllPayments = () =>
+  api.get('/payments/all').then((r) => r.data);

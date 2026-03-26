@@ -1,98 +1,359 @@
-.owner-dashboard {
+/* ── Layout ─────────────────────────────────────────────────────── */
+.owner-full {
   min-height: 100vh;
-  background: var(--navy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 16px;
-}
-
-.owner-dashboard__card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 48px 40px;
-  max-width: 480px;
-  width: 100%;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
-}
-
-.owner-dashboard__icon {
-  width: 64px;
-  height: 64px;
-  background: var(--navy);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-  color: var(--orange);
-}
-
-.owner-dashboard__icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.owner-dashboard__card h1 {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--gray-800);
-  margin-bottom: 6px;
-}
-
-.owner-dashboard__welcome {
-  font-size: 15px;
-  color: var(--gray-600);
-  margin-bottom: 20px;
-}
-
-.owner-dashboard__badge {
-  display: inline-block;
-  background: var(--orange-light);
-  color: var(--orange);
-  border: 1px solid var(--orange);
-  border-radius: 20px;
-  padding: 4px 16px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.owner-dashboard__desc {
-  font-size: 14px;
-  color: var(--gray-600);
-  line-height: 1.7;
-  margin-bottom: 28px;
-}
-
-.owner-dashboard__features {
+  background: var(--gray-50);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 32px;
-  text-align: left;
 }
 
-.owner-feature {
+.owner-main {
+  flex: 1;
+}
+
+/* ── Hero / Stats ───────────────────────────────────────────────── */
+.owner-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 40px 0 32px;
+}
+
+.owner-hero__inner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--gray-50);
-  border-radius: var(--radius);
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.owner-hero__text h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.owner-hero__text p {
   font-size: 14px;
-  color: var(--gray-800);
-  font-weight: 500;
+  color: rgba(255,255,255,0.65);
 }
 
-.owner-feature__icon {
+.owner-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  text-align: center;
+  min-width: 130px;
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 600;
+}
+
+.stat-card__sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 3px;
+}
+
+/* ── Payments section ───────────────────────────────────────────── */
+.owner-section {
+  padding: 32px 24px 48px;
+}
+
+.owner-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.owner-section__title {
   font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-800);
 }
 
-.owner-dashboard__logout {
+/* ── Filter tabs ────────────────────────────────────────────────── */
+.owner-filter-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.owner-filter-tab {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.owner-filter-tab:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.owner-filter-tab--active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+}
+
+.owner-filter-count {
+  background: var(--orange);
+  color: var(--white);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ── Payments table ─────────────────────────────────────────────── */
+.payments-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+}
+
+.payments-table {
   width: 100%;
-  justify-content: center;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.payments-table thead tr {
+  background: var(--gray-50);
+  border-bottom: 1.5px solid var(--gray-200);
+}
+
+.payments-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.payments-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.1s;
+}
+
+.payments-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.payments-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.payments-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+/* Row accent by status */
+.payment-row--in_escrow td:first-child {
+  border-left: 3px solid var(--yellow);
+}
+
+.payment-row--released td:first-child {
+  border-left: 3px solid var(--green);
+}
+
+/* Route cell */
+.payment-route {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.payment-city {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 13px;
+}
+
+.payment-arrow {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.payment-na {
+  color: var(--gray-400);
+}
+
+.payment-miles {
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 3px;
+}
+
+/* Amount */
+.payment-amount {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+/* Name cells */
+.payment-name {
+  color: var(--gray-700);
+  font-size: 13px;
+}
+
+.payment-unassigned {
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* Status badge */
+.payment-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.payment-badge--in_escrow { background: var(--yellow-light); color: var(--yellow); }
+.payment-badge--released  { background: var(--green-light);  color: var(--green); }
+.payment-badge--pending   { background: var(--gray-100);     color: var(--gray-600); }
+.payment-badge--refunded  { background: var(--red-light);    color: var(--red); }
+
+.payment-release-time {
+  font-size: 10px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* Date cell */
+.payment-date {
+  color: var(--gray-400);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ── Loading / empty / error ────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.error-state__icon {
+  font-size: 36px;
+  opacity: 0.7;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .owner-hero__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .owner-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .stat-card__value {
+    font-size: 18px;
+  }
+
+  .owner-section__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payments-table th:nth-child(3),
+  .payments-table td:nth-child(3),
+  .payments-table th:nth-child(4),
+  .payments-table td:nth-child(4) {
+    display: none;
+  }
 }
