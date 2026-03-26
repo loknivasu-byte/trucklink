@@ -5,3 +5,6 @@ export const getPaymentStatus = (loadId) =>
 
 export const getMyPayments = () =>
   api.get('/payments/my').then((r) => r.data);
+
+export const releasePayment = (loadId) =>
+  api.post(`/payments/release/${loadId}`).then((r) => r.data);

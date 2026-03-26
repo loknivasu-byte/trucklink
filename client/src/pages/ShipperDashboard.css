@@ -1,0 +1,571 @@
+/* ── Layout ─────────────────────────────────────────────────────── */
+.shipper-dashboard {
+  min-height: 100vh;
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+}
+
+.shipper-main { flex: 1; }
+
+.dashboard-section { padding: 32px 24px 48px; }
+
+/* ── Hero / Stats ────────────────────────────────────────────────── */
+.shipper-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 40px 0 32px;
+}
+
+.shipper-hero__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.shipper-hero__text h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.shipper-hero__text p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+}
+
+.shipper-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  text-align: center;
+  min-width: 100px;
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 600;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────── */
+.dashboard-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--gray-200);
+  padding-top: 24px;
+}
+
+.dashboard-tab {
+  background: none;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-tab:hover { color: var(--navy); }
+
+.dashboard-tab--active {
+  color: var(--navy);
+  border-bottom-color: var(--orange);
+}
+
+.tab-badge {
+  background: var(--gray-200);
+  color: var(--gray-800);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Loads grid ──────────────────────────────────────────────────── */
+.loads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.section-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 16px;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.section-heading--completed { margin-top: 36px; color: var(--gray-600); }
+
+/* ── Shipper load card ───────────────────────────────────────────── */
+.shipper-load-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-200);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: box-shadow 0.15s;
+}
+
+.shipper-load-card:hover { box-shadow: var(--shadow); }
+
+.shipper-load-card--in_transit { border-left: 4px solid #3b82f6; }
+.shipper-load-card--accepted   { border-left: 4px solid var(--yellow); }
+.shipper-load-card--delivered  { border-left: 4px solid var(--green); }
+.shipper-load-card--available  { border-left: 4px solid var(--gray-400); }
+
+.shipper-load-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.load-route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.load-city {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.load-arrow { color: var(--orange); font-weight: 700; }
+
+/* ── Status badge ────────────────────────────────────────────────── */
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge--available  { background: var(--gray-100);    color: var(--gray-600); }
+.status-badge--accepted   { background: var(--yellow-light); color: var(--yellow); }
+.status-badge--in_transit { background: #dbeafe;             color: #1d4ed8; }
+.status-badge--delivered  { background: var(--green-light);  color: var(--green); }
+.status-badge--cancelled  { background: var(--red-light);    color: var(--red); }
+
+/* ── Card meta grid ──────────────────────────────────────────────── */
+.shipper-load-card__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-400);
+  font-weight: 600;
+}
+
+.meta-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+/* ── Pay ─────────────────────────────────────────────────────────── */
+.shipper-load-card__pay {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.pay-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.pay-rate {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+/* ── Driver info ─────────────────────────────────────────────────── */
+.shipper-load-card__driver {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  padding: 10px 12px;
+  background: var(--gray-50);
+  border-radius: var(--radius);
+}
+
+.driver-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gray-400);
+  letter-spacing: 0.5px;
+}
+
+.driver-name {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.driver-score, .driver-deliveries {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.shipper-load-card__no-driver {
+  font-size: 13px;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* ── Payment release ─────────────────────────────────────────────── */
+.release-payment { display: flex; flex-direction: column; gap: 8px; }
+
+.release-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.release-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--orange-light);
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--gray-800);
+  font-weight: 500;
+}
+
+.release-confirm__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.release-confirm__yes {
+  flex: 1;
+  justify-content: center;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.release-confirm__no {
+  flex: 1;
+  justify-content: center;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.release-error {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-light);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+}
+
+.payment-released {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--green-light);
+  color: var(--green);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Post Load Form ──────────────────────────────────────────────── */
+.post-load-form-wrap {
+  max-width: 680px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--gray-200);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.post-load-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.post-load-form-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.post-load-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+}
+
+.post-load-close:hover {
+  color: var(--gray-800);
+  background: var(--gray-100);
+}
+
+.post-load-form {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--orange);
+  margin-top: 4px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--gray-400);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--gray-800);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(26,58,107,0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: var(--gray-400); }
+
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* ── Total pay preview ───────────────────────────────────────────── */
+.total-pay-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--orange-light);
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.total-pay-preview__amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+/* ── Form error / actions ────────────────────────────────────────── */
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--red-light);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-error svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.post-load-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.post-load-submit {
+  flex: 1;
+  justify-content: center;
+}
+
+.post-load-actions .btn-outline {
+  padding: 12px 24px;
+  font-size: 14px;
+}
+
+/* ── Loading / empty / error states ─────────────────────────────── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.empty-state__icon { font-size: 40px; opacity: 0.5; }
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.error-state__icon { font-size: 36px; opacity: 0.7; }
+
+/* ── Spinner ─────────────────────────────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .shipper-hero__inner { flex-direction: column; align-items: flex-start; }
+
+  .shipper-stats { width: 100%; justify-content: space-between; }
+
+  .stat-card { flex: 1; min-width: 0; padding: 12px; }
+  .stat-card__value { font-size: 18px; }
+
+  .loads-grid { grid-template-columns: 1fr; }
+
+  .form-row { grid-template-columns: 1fr; }
+
+  .post-load-actions { flex-direction: column; }
+  .post-load-submit { width: 100%; }
+}
