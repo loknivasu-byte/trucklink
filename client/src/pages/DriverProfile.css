@@ -1,0 +1,268 @@
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.driver-profile {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.profile-main {
+  padding: 2rem 0 4rem;
+}
+
+.profile-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* ── Back button ─────────────────────────────────────────────────────────── */
+
+.profile-back {
+  background: none;
+  border: none;
+  color: var(--navy-light, #1a3a6b);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.15s;
+}
+
+.profile-back:hover {
+  color: var(--orange, #f97316);
+}
+
+/* ── Profile header ──────────────────────────────────────────────────────── */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--navy, #0f2240);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-header__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profile-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--navy, #0f2240);
+  margin: 0;
+}
+
+.profile-member-since {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Role badge ──────────────────────────────────────────────────────────── */
+
+.profile-role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  width: fit-content;
+}
+
+.profile-role-badge--driver {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.profile-role-badge--shipper {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.profile-role-badge--owner {
+  background: #f3e8ff;
+  color: #6d28d9;
+}
+
+/* ── Stats row ───────────────────────────────────────────────────────────── */
+
+.profile-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-stat {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.profile-stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy, #0f2240);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.profile-stat__label {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* ── Star display ────────────────────────────────────────────────────────── */
+
+.star-display {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.star {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.star--filled {
+  color: #f59e0b;
+}
+
+.star--empty {
+  color: #d1d5db;
+}
+
+/* ── Ratings section ─────────────────────────────────────────────────────── */
+
+.profile-ratings {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.profile-ratings__heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy, #0f2240);
+  margin: 0 0 1.25rem;
+}
+
+.profile-ratings__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Rating card ─────────────────────────────────────────────────────────── */
+
+.profile-rating-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+}
+
+.profile-rating-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.profile-rating-card__score {
+  font-weight: 700;
+  color: var(--navy, #0f2240);
+  font-size: 0.9rem;
+}
+
+.profile-rating-card__route {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-left: auto;
+}
+
+.profile-rating-card__comment {
+  font-style: italic;
+  color: #374151;
+  font-size: 0.9rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.5;
+}
+
+.profile-rating-card__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-rating-card__rater {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.profile-rating-card__date {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-header__info {
+    align-items: center;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+  }
+
+  .profile-rating-card__route {
+    margin-left: 0;
+    width: 100%;
+  }
+}

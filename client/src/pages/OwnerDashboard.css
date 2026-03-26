@@ -73,6 +73,53 @@
   margin-top: 3px;
 }
 
+/* ── Top-level tabs ─────────────────────────────────────────────── */
+.owner-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--gray-200);
+  padding: 16px 24px 0;
+}
+
+.owner-tab {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.owner-tab:hover {
+  color: var(--navy);
+}
+
+.owner-tab--active {
+  color: var(--navy);
+  border-bottom-color: var(--orange);
+}
+
+/* ── Driver profile link in table ───────────────────────────────── */
+.driver-profile-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange, #f97316);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.driver-profile-link:hover {
+  color: #ea580c;
+}
+
 /* ── Payments section ───────────────────────────────────────────── */
 .owner-section {
   padding: 32px 24px 48px;
@@ -321,6 +368,70 @@
 .empty-state__icon {
   font-size: 40px;
   opacity: 0.5;
+}
+
+/* ── Analytics ──────────────────────────────────────────────────── */
+.analytics-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.analytics-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy, #0f2240);
+  margin: 0 0 4px;
+}
+
+.analytics-card__sub {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin: 0 0 20px;
+}
+
+.analytics-empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 13px;
+}
+
+.analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.analytics-summary__item {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.analytics-summary__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+.analytics-summary__value {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy, #0f2240);
+}
+
+.analytics-summary__value--escrow {
+  color: #d97706;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────── */

@@ -6,6 +6,7 @@ import DriverDashboard from './pages/DriverDashboard';
 import ShipperDashboard from './pages/ShipperDashboard';
 import LoadMatchingPage from './pages/LoadMatchingPage';
 import OwnerDashboard from './pages/OwnerDashboard';
+import DriverProfile from './pages/DriverProfile';
 
 // Redirects to login if not authenticated, or wrong role
 const PrivateRoute = ({ children, allowedRoles }) => {
@@ -56,6 +57,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={['owner']}>
             <OwnerDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/driver/:id"
+        element={
+          <PrivateRoute allowedRoles={['driver', 'shipper', 'owner']}>
+            <DriverProfile />
           </PrivateRoute>
         }
       />

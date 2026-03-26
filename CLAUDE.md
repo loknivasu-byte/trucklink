@@ -19,6 +19,7 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 | Step 7 | Connect Claude API | ✅ Complete |
 | Step 8 | Simulated Escrow Payment | ✅ Complete |
 | Step 9 | Ratings & Reviews | ✅ Complete |
+| Step 10 | Driver Profile + Admin Analytics | ✅ Complete |
 
 ---
 
@@ -126,6 +127,8 @@ GET    /api/payments/status/:id   — Escrow status + time until auto-release (o
 GET    /api/payments/all          — All platform payments (owner only)
 
 POST   /api/ai/chat               — AI assistant (Claude API)
+
+GET    /api/users/:id             — Public profile (name, role, score, ratings received)
 ```
 
 ---
@@ -182,10 +185,37 @@ Rating rules:
 
 ---
 
-## Next Session — Step 10 Ideas
+## Step 10 — Driver Profile + Admin Analytics (Complete)
+
+### Driver Profile Page (`/driver/:id`)
+- Public profile accessible to all authenticated users (driver, shipper, owner)
+- Shows: avatar initial, name, role badge, trustScore/rating with stars, total deliveries, member since
+- Ratings received section: each card shows rater name/role, star display, comment, load route, date
+- Accessible via: driver name links in ShipperLoadCard + OwnerDashboard payments table
+- Backend: `GET /api/users/:id` returns limited public fields + populated ratings
+
+### Admin Analytics Tab (Owner Dashboard)
+- New "Analytics" tab alongside "All Payments"
+- Revenue Over Time: BarChart grouped by month (last 8 months, released payments only)
+- Top Drivers by Earnings: horizontal BarChart, top 5 drivers by total released payments
+- Platform summary grid: total revenue, funds in escrow, unique drivers, total loads paid
+- Charts use Recharts (`BarChart`, `ResponsiveContainer`, `Tooltip`, `CartesianGrid`)
+- All analytics computed client-side from existing `getAllPayments()` data — no new backend endpoint
+
+### New Files
+```
+server/routes/users.js                — GET /api/users/:id (public profile)
+client/src/services/userService.js    — getUserProfile(userId)
+client/src/pages/DriverProfile.jsx    — profile page component
+client/src/pages/DriverProfile.css    — profile page styles
+```
+
+---
+
+## Next Session — Step 11 Ideas
 
 Potential next features:
 - **Notifications** — in-app alerts for load accepted, delivered, payment released, new rating
-- **Driver profile page** — public page showing trustScore, delivery count, ratings received
 - **Load history search** — shipper/driver can filter/search past loads by date range or city
-- **Admin analytics** — Owner dashboard graphs: loads per week, revenue trends, top drivers
+- **Map view** — show load routes on an interactive map (Mapbox / Leaflet)
+- **Mobile-responsive polish** — optimize all dashboards for small screens

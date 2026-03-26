@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyLoads, postLoad } from '../services/loadService';
 import { releasePayment } from '../services/paymentService';
@@ -214,7 +215,9 @@ const ReleasePaymentButton = ({ load, onReleased }) => {
 
 // ── Load card ──────────────────────────────────────────────────────────────
 
-const ShipperLoadCard = ({ load, onReleased, myRatings, ratingsLoaded }) => (
+const ShipperLoadCard = ({ load, onReleased, myRatings, ratingsLoaded }) => {
+  const navigate = useNavigate();
+  return (
   <div className={`shipper-load-card shipper-load-card--${load.status}`}>
     <div className="shipper-load-card__header">
       <div className="load-route">
@@ -252,7 +255,13 @@ const ShipperLoadCard = ({ load, onReleased, myRatings, ratingsLoaded }) => (
     {load.driver ? (
       <div className="shipper-load-card__driver">
         <span className="driver-label">Driver</span>
-        <span className="driver-name">{load.driver.name}</span>
+        <button
+          type="button"
+          className="driver-name driver-name--link"
+          onClick={() => navigate(`/driver/${load.driver._id}`)}
+        >
+          {load.driver.name}
+        </button>
         {load.driver.trustScore && (
           <span className="driver-score">⭐ {load.driver.trustScore}</span>
         )}
@@ -283,7 +292,8 @@ const ShipperLoadCard = ({ load, onReleased, myRatings, ratingsLoaded }) => (
       </>
     )}
   </div>
-);
+  );
+};
 
 // ── Post Load Form ─────────────────────────────────────────────────────────
 
