@@ -1,7 +1,7 @@
 import api from './api';
 
-export const getAvailableLoads = (filters = {}) =>
-  api.get('/loads', { params: filters }).then((r) => r.data);
+export const getAvailableLoads = (filters = {}, signal) =>
+  api.get('/loads', { params: filters, signal }).then((r) => r.data);
 
 export const getMyLoads = () => api.get('/loads/my').then((r) => r.data);
 

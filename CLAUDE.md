@@ -14,8 +14,8 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 | Step 2 | Landing Page | ✅ Complete |
 | Step 3 | Login Page | ✅ Complete |
 | Step 4 | Driver Dashboard | ✅ Complete |
-| Step 5 | Shipper Dashboard | ⬜ Next |
-| Step 6 | Load Matching Page | ⬜ Pending |
+| Step 5 | Shipper Dashboard | ✅ Complete |
+| Step 6 | Load Matching Page | ✅ Complete |
 | Step 7 | Connect Claude API | ⬜ Pending |
 | Step 8 | Simulated Escrow Payment | ⬜ Pending |
 
@@ -145,11 +145,10 @@ Border radius: 8px (--radius), 16px (--radius-lg)
 
 ---
 
-## Next Session — Step 3: Login Page
+## Next Session — Step 7: Connect Claude API
 
-Build a role-based login page with:
-- Role selector: Driver / Shipper / Owner (tab or card selection)
-- Email + password fields
-- JWT auth calling POST /api/auth/login
-- Redirects to correct dashboard based on role (`/driver`, `/shipper`, `/owner`)
-- Registration option (same page, toggle between login/register)
+Wire up the AI Load Matching feature:
+- Connect POST /api/ai/chat to Anthropic Claude API
+- Driver types a natural-language query on the Load Matching Page
+- Claude returns ranked load recommendations from the available set
+- Enable the "Ask AI" button in the AI banner on LoadMatchingPage
