@@ -1,0 +1,56 @@
+# ── Dependencies ─────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Environment variables (NEVER commit secrets) ─────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# ── Build output ─────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+.vite/
+
+# ── Logs ─────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS generated files ───────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# ── Editor directories ───────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+
+# ── Testing ──────────────────────────────────────────────────────
+coverage/
+
+# ── Private docs (security notes, secret bug reports) ────────────
+docs/bugs-and-fixes/PRIVATE-*.md
+
+# ── Misc ─────────────────────────────────────────────────────────
+*.local
+.cache/
