@@ -12,9 +12,9 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 |------|-------------|--------|
 | Step 1 | Project structure setup | ✅ Complete |
 | Step 2 | Landing Page | ✅ Complete |
-| Step 3 | Login Page | ⬜ Next |
-| Step 4 | Driver Dashboard | ⬜ Pending |
-| Step 5 | Shipper Dashboard | ⬜ Pending |
+| Step 3 | Login Page | ✅ Complete |
+| Step 4 | Driver Dashboard | ✅ Complete |
+| Step 5 | Shipper Dashboard | ⬜ Next |
 | Step 6 | Load Matching Page | ⬜ Pending |
 | Step 7 | Connect Claude API | ⬜ Pending |
 | Step 8 | Simulated Escrow Payment | ⬜ Pending |

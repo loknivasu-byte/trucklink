@@ -1,0 +1,485 @@
+/* ── Layout ────────────────────────────────────────────────────── */
+.driver-dashboard {
+  min-height: 100vh;
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+}
+
+.driver-main {
+  flex: 1;
+}
+
+.dashboard-section {
+  padding: 32px 24px 48px;
+}
+
+/* ── Hero / Stats ───────────────────────────────────────────────── */
+.driver-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 40px 0 32px;
+}
+
+.driver-hero__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.driver-hero__text h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.driver-hero__text p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+}
+
+.driver-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  text-align: center;
+  min-width: 110px;
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 600;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────── */
+.dashboard-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--gray-200);
+  margin-top: 0;
+  padding-top: 24px;
+}
+
+.dashboard-tab {
+  background: none;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-tab:hover {
+  color: var(--navy);
+}
+
+.dashboard-tab--active {
+  color: var(--navy);
+  border-bottom-color: var(--orange);
+}
+
+.tab-badge {
+  background: var(--gray-200);
+  color: var(--gray-800);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tab-badge--orange {
+  background: var(--orange);
+  color: var(--white);
+}
+
+/* ── Filters ────────────────────────────────────────────────────── */
+.load-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.load-filters input,
+.load-filters select {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--gray-800);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.load-filters input:focus,
+.load-filters select:focus {
+  border-color: var(--navy-light);
+}
+
+.load-filters input::placeholder {
+  color: var(--gray-400);
+}
+
+.load-filters select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.load-filters .btn-primary {
+  flex-shrink: 0;
+  padding: 10px 24px;
+}
+
+/* ── Loads grid ─────────────────────────────────────────────────── */
+.loads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.section-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 16px;
+  margin-top: 8px;
+}
+
+.section-heading--delivered {
+  margin-top: 36px;
+  color: var(--gray-600);
+}
+
+/* ── Load card (shared) ─────────────────────────────────────────── */
+.load-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-200);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.load-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--gray-200);
+}
+
+.load-card--active {
+  border-left: 4px solid var(--orange);
+}
+
+.load-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.load-card__route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.load-card__city {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.load-card__arrow {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* ── Status badge ───────────────────────────────────────────────── */
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge--available   { background: var(--green-light);  color: var(--green); }
+.status-badge--accepted    { background: var(--yellow-light); color: var(--yellow); }
+.status-badge--in_transit  { background: #dbeafe;             color: #1d4ed8; }
+.status-badge--delivered   { background: var(--green-light);  color: var(--green); }
+.status-badge--cancelled   { background: var(--red-light);    color: var(--red); }
+
+/* ── Load meta items ────────────────────────────────────────────── */
+.load-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.load-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--gray-600);
+  background: var(--gray-100);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.load-meta__icon {
+  font-size: 12px;
+}
+
+/* ── Pay display ────────────────────────────────────────────────── */
+.load-card__pay {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.load-card__pay-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.load-card__pay-rate {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.load-card__rate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 8px 0;
+  border-top: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.load-card__rate-label {
+  color: var(--gray-600);
+}
+
+.load-card__rate-value {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* ── Shipper info ───────────────────────────────────────────────── */
+.load-card__shipper {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.load-card__shipper strong {
+  color: var(--gray-800);
+}
+
+.load-card__rating {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+/* ── Action button ──────────────────────────────────────────────── */
+.load-card__action {
+  width: 100%;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.load-card__error {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-light);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+}
+
+/* ── Escrow info ────────────────────────────────────────────────── */
+.escrow-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: auto;
+}
+
+.escrow-info--pending  { background: var(--yellow-light); color: var(--yellow); }
+.escrow-info--released { background: var(--green-light);  color: var(--green); }
+.escrow-info--error    { background: var(--red-light);    color: var(--red); }
+.escrow-info--loading  { background: var(--gray-100);     color: var(--gray-600); }
+
+.escrow-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--gray-400);
+  border-top-color: var(--gray-600);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Error state ────────────────────────────────────────────────── */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.error-state__icon {
+  font-size: 36px;
+  opacity: 0.7;
+}
+
+.section-error {
+  padding: 10px 14px;
+  background: var(--red-light);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* ── Loading / empty states ─────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+/* ── Spinner (reuse from LoginPage) ─────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .driver-hero__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .driver-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .stat-card__value {
+    font-size: 18px;
+  }
+
+  .loads-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .load-filters {
+    flex-direction: column;
+  }
+
+  .load-filters input,
+  .load-filters select,
+  .load-filters .btn-primary {
+    width: 100%;
+    flex: none;
+  }
+}
