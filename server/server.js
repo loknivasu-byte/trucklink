@@ -40,6 +40,7 @@ app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/loads', require('./routes/loads'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ratings', require('./routes/ratings'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -51,6 +52,14 @@ app.use((err, req, res, next) => {
   console.error(`[Error] ${req.method} ${req.path} —`, err.message);
   if (err.name === 'CastError') {
     return res.status(400).json({ message: 'Invalid ID format' });
+  }
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({ message: messages.join('; ') });
+  }
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    return res.status(409).json({ message: `Duplicate value for ${field}` });
   }
   res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
 });

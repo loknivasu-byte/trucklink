@@ -5,12 +5,13 @@ const Payment = require('../models/Payment');
 const User = require('../models/User');
 const { protect, requireRole } = require('../middleware/authMiddleware');
 
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // GET /api/loads - Get all available loads (any authenticated user can browse)
 router.get('/', protect, async (req, res, next) => {
   try {
     const { pickupCity, deliveryCity, truckType } = req.query;
     const filter = { status: 'available' };
-    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     if (pickupCity) filter.pickupCity = new RegExp(escapeRegex(pickupCity), 'i');
     if (deliveryCity) filter.deliveryCity = new RegExp(escapeRegex(deliveryCity), 'i');

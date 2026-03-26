@@ -18,7 +18,7 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 | Step 6 | Load Matching Page | ✅ Complete |
 | Step 7 | Connect Claude API | ✅ Complete |
 | Step 8 | Simulated Escrow Payment | ✅ Complete |
-| Step 9 | Ratings & Reviews | ⬜ Pending |
+| Step 9 | Ratings & Reviews | ✅ Complete |
 
 ---
 
@@ -164,22 +164,28 @@ Border radius: 8px (--radius), 16px (--radius-lg)
 
 ---
 
-## Next Session — Step 9: Ratings & Reviews
+## Ratings & Reviews API (Step 9)
 
-Build a mutual rating system triggered after payment is released:
-
-- **Driver rates Shipper** (1–5 stars) → updates `shipper.rating`
-- **Shipper rates Driver** (1–5 stars) → updates `driver.trustScore`
-- Rating prompt appears on delivered load cards (after payment released)
-- One rating per load per direction — can't rate twice
-- Rating average calculated from all past ratings, not just last
-- Owner dashboard shows platform-wide average trust and rating scores
-
-### New files needed
 ```
-server/models/Rating.js           — { load, rater, ratee, role, score, comment }
-server/routes/ratings.js          — POST /api/ratings, GET /api/ratings/:userId
-client/src/services/ratingService.js
-client/src/pages/DriverDashboard.jsx  — add RateShipper component on delivered+paid loads
-client/src/pages/ShipperDashboard.jsx — add RateDriver component on delivered+paid loads
+POST   /api/ratings              — Submit rating (requires delivered load + released payment)
+GET    /api/ratings/my           — All ratings current user has submitted
+GET    /api/ratings/load/:loadId — Check if current user rated a specific load
+GET    /api/ratings/user/:userId — All ratings received by a user
 ```
+
+Rating rules:
+- Score must be 1–5 (whole number)
+- Only the driver or shipper on the load can rate
+- Payment must be released before rating is allowed
+- One rating per load per direction (enforced by unique index `{ load, rater }`)
+- Rolling average stored on User: `trustScore` (driver) or `rating` (shipper)
+
+---
+
+## Next Session — Step 10 Ideas
+
+Potential next features:
+- **Notifications** — in-app alerts for load accepted, delivered, payment released, new rating
+- **Driver profile page** — public page showing trustScore, delivery count, ratings received
+- **Load history search** — shipper/driver can filter/search past loads by date range or city
+- **Admin analytics** — Owner dashboard graphs: loads per week, revenue trends, top drivers

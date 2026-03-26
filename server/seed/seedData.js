@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Load = require('../models/Load');
 const Payment = require('../models/Payment');
+const Rating = require('../models/Rating');
 const connectDB = require('../config/db');
 
 const seed = async () => {
@@ -13,6 +14,7 @@ const seed = async () => {
   await User.deleteMany({});
   await Load.deleteMany({});
   await Payment.deleteMany({});
+  await Rating.deleteMany({});
 
   console.log('Cleared existing data...');
 

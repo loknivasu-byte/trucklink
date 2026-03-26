@@ -7,6 +7,7 @@ import {
   updateLoadStatus,
 } from '../services/loadService';
 import { getPaymentStatus, getMyPayments } from '../services/paymentService';
+import { submitRating, getMyRatings } from '../services/ratingService';
 import Navbar from '../components/Navbar';
 import './DriverDashboard.css';
 
@@ -226,6 +227,98 @@ const AvailableLoadCard = ({ load, onAccept, accepting }) => (
   </div>
 );
 
+// ── Rating widget ──────────────────────────────────────────────────────────
+
+const RatingWidget = ({ loadId, rateeLabel, myRatings, onRated }) => {
+  const [score, setScore] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  // Reset widget state whenever the load changes
+  useEffect(() => {
+    setScore(0);
+    setHovered(0);
+    setComment('');
+    setSubmitting(false);
+    setSubmitted(false);
+    setError('');
+  }, [loadId]);
+
+  const alreadyRated = myRatings.find(
+    (r) => r.load?._id === loadId || r.load?._id?.toString() === loadId
+  );
+
+  if (alreadyRated || submitted) {
+    const displayScore = alreadyRated?.score ?? score;
+    return (
+      <div className="rating-widget rating-widget--done">
+        <span className="rating-widget__stars-display" aria-label={`Rated ${displayScore} out of 5`}>
+          {'★'.repeat(displayScore)}{'☆'.repeat(5 - displayScore)}
+        </span>
+        <span className="rating-widget__done-label">You rated {rateeLabel}</span>
+      </div>
+    );
+  }
+
+  const handleSubmit = async () => {
+    if (!score || submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await submitRating({ loadId, score, comment });
+      setSubmitted(true);
+      if (onRated) onRated(score);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rating-widget">
+      <div className="rating-widget__prompt">Rate {rateeLabel}</div>
+      <div className="rating-widget__stars" role="group" aria-label={`Rate ${rateeLabel}`}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`rating-star ${n <= (hovered || score) ? 'rating-star--active' : ''}`}
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => setScore(n)}
+            aria-label={`${n} star${n !== 1 ? 's' : ''}`}
+            aria-pressed={score === n}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+      <textarea
+        className="rating-widget__comment"
+        aria-label="Optional comment for your rating"
+        placeholder="Optional comment… (max 500 chars)"
+        rows={2}
+        maxLength={500}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      {error && <div className="rating-widget__error">{error}</div>}
+      <button
+        type="button"
+        className="btn-primary rating-widget__submit"
+        onClick={handleSubmit}
+        disabled={!score || submitting}
+      >
+        {submitting ? <span className="spinner" /> : 'Submit Rating'}
+      </button>
+    </div>
+  );
+};
+
 // ── Earnings payment row ───────────────────────────────────────────────────
 
 const PAYMENT_STATUS_LABEL = {
@@ -235,10 +328,11 @@ const PAYMENT_STATUS_LABEL = {
   refunded: 'Refunded',
 };
 
-const EarningRow = ({ payment }) => {
+const EarningRow = ({ payment, myRatings, ratingsLoaded }) => {
   const load = payment.load;
   const isReleased = payment.status === 'released';
   const isEscrow = payment.status === 'in_escrow';
+  const shipperLabel = payment.shipper?.companyName || payment.shipper?.name || 'your shipper';
 
   return (
     <div className={`earning-row earning-row--${payment.status}`}>
@@ -277,6 +371,14 @@ const EarningRow = ({ payment }) => {
             : ''}
         </span>
       </div>
+
+      {isReleased && load?._id && ratingsLoaded && (
+        <RatingWidget
+          loadId={load._id}
+          rateeLabel={shipperLabel}
+          myRatings={myRatings}
+        />
+      )}
     </div>
   );
 };
@@ -300,6 +402,9 @@ const DriverDashboard = () => {
   const [earnings, setEarnings] = useState([]);
   const [loadingEarnings, setLoadingEarnings] = useState(true);
   const [earningsError, setEarningsError] = useState('');
+
+  const [myRatings, setMyRatings] = useState([]);
+  const [ratingsLoaded, setRatingsLoaded] = useState(false);
 
   // Accepts params directly — no filter dependency, no auto-refetch on typing
   const fetchAvailableLoads = useCallback(async (params = {}) => {
@@ -352,6 +457,12 @@ const DriverDashboard = () => {
   useEffect(() => { fetchActiveLoads(); }, [fetchActiveLoads]);
   useEffect(() => { fetchAvailableLoads(); }, [fetchAvailableLoads]);
   useEffect(() => { fetchEarnings(); }, [fetchEarnings]);
+  // Fetch submitted ratings silently — failure is non-blocking
+  useEffect(() => {
+    getMyRatings()
+      .then((data) => { setMyRatings(data); setRatingsLoaded(true); })
+      .catch(() => { setRatingsLoaded(true); });
+  }, []);
 
   const handleAccept = async (loadId) => {
     setAccepting(loadId);
@@ -630,7 +741,7 @@ const DriverDashboard = () => {
             ) : (
               <div className="earnings-list">
                 {earnings.map((payment) => (
-                  <EarningRow key={payment._id} payment={payment} />
+                  <EarningRow key={payment._id} payment={payment} myRatings={myRatings} ratingsLoaded={ratingsLoaded} />
                 ))}
               </div>
             )}

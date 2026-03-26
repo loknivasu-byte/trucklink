@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getMyLoads, postLoad } from '../services/loadService';
 import { releasePayment } from '../services/paymentService';
+import { submitRating, getMyRatings } from '../services/ratingService';
 import Navbar from '../components/Navbar';
 import './ShipperDashboard.css';
 
@@ -45,6 +46,97 @@ const StatusBadge = ({ status }) => (
     {STATUS_LABEL[status] ?? status}
   </span>
 );
+
+// ── Rating widget ──────────────────────────────────────────────────────────
+
+const RatingWidget = ({ loadId, rateeLabel, myRatings }) => {
+  const [score, setScore] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  // Reset widget state whenever the load changes
+  useEffect(() => {
+    setScore(0);
+    setHovered(0);
+    setComment('');
+    setSubmitting(false);
+    setSubmitted(false);
+    setError('');
+  }, [loadId]);
+
+  const alreadyRated = myRatings.find(
+    (r) => r.load?._id === loadId || r.load?._id?.toString() === loadId
+  );
+
+  if (alreadyRated || submitted) {
+    const displayScore = alreadyRated?.score ?? score;
+    return (
+      <div className="rating-widget rating-widget--done">
+        <span className="rating-widget__stars-display" aria-label={`Rated ${displayScore} out of 5`}>
+          {'★'.repeat(displayScore)}{'☆'.repeat(5 - displayScore)}
+        </span>
+        <span className="rating-widget__done-label">You rated {rateeLabel}</span>
+      </div>
+    );
+  }
+
+  const handleSubmit = async () => {
+    if (!score || submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await submitRating({ loadId, score, comment });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rating-widget">
+      <div className="rating-widget__prompt">Rate {rateeLabel}</div>
+      <div className="rating-widget__stars" role="group" aria-label={`Rate ${rateeLabel}`}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`rating-star ${n <= (hovered || score) ? 'rating-star--active' : ''}`}
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => setScore(n)}
+            aria-label={`${n} star${n !== 1 ? 's' : ''}`}
+            aria-pressed={score === n}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+      <textarea
+        className="rating-widget__comment"
+        aria-label="Optional comment for your rating"
+        placeholder="Optional comment… (max 500 chars)"
+        rows={2}
+        maxLength={500}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      {error && <div className="rating-widget__error">{error}</div>}
+      <button
+        type="button"
+        className="btn-primary rating-widget__submit"
+        onClick={handleSubmit}
+        disabled={!score || submitting}
+      >
+        {submitting ? <span className="spinner" /> : 'Submit Rating'}
+      </button>
+    </div>
+  );
+};
 
 // ── Payment release button with confirmation ───────────────────────────────
 
@@ -122,7 +214,7 @@ const ReleasePaymentButton = ({ load, onReleased }) => {
 
 // ── Load card ──────────────────────────────────────────────────────────────
 
-const ShipperLoadCard = ({ load, onReleased }) => (
+const ShipperLoadCard = ({ load, onReleased, myRatings, ratingsLoaded }) => (
   <div className={`shipper-load-card shipper-load-card--${load.status}`}>
     <div className="shipper-load-card__header">
       <div className="load-route">
@@ -172,8 +264,23 @@ const ShipperLoadCard = ({ load, onReleased }) => (
       <div className="shipper-load-card__no-driver">Awaiting driver</div>
     )}
 
-    {load.status === 'delivered' && (
+    {load.status === 'delivered' && !load.paymentReleasedAt && (
       <ReleasePaymentButton load={load} onReleased={onReleased} />
+    )}
+
+    {load.paymentReleasedAt && (
+      <>
+        <div className="payment-released-badge">
+          <span>✓</span> Payment released {new Date(load.paymentReleasedAt).toLocaleDateString()}
+        </div>
+        {load.driver && ratingsLoaded && (
+          <RatingWidget
+            loadId={load._id}
+            rateeLabel={load.driver.name || 'your driver'}
+            myRatings={myRatings}
+          />
+        )}
+      </>
     )}
   </div>
 );
@@ -363,6 +470,8 @@ const ShipperDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('loads'); // 'loads' | 'post'
+  const [myRatings, setMyRatings] = useState([]);
+  const [ratingsLoaded, setRatingsLoaded] = useState(false);
 
   const fetchLoads = useCallback(async () => {
     setLoading(true);
@@ -378,6 +487,11 @@ const ShipperDashboard = () => {
   }, []);
 
   useEffect(() => { fetchLoads(); }, [fetchLoads]);
+  useEffect(() => {
+    getMyRatings()
+      .then((data) => { setMyRatings(data); setRatingsLoaded(true); })
+      .catch(() => { setRatingsLoaded(true); });
+  }, []);
 
   const handlePosted = () => {
     setActiveTab('loads');
@@ -485,7 +599,7 @@ const ShipperDashboard = () => {
                     <h2 className="section-heading">In Progress</h2>
                     <div className="loads-grid">
                       {inProgressLoads.map((load) => (
-                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} />
+                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} myRatings={myRatings} ratingsLoaded={ratingsLoaded} />
                       ))}
                     </div>
                   </>
@@ -496,7 +610,7 @@ const ShipperDashboard = () => {
                     <h2 className="section-heading">Open — Awaiting Driver</h2>
                     <div className="loads-grid">
                       {openLoads.map((load) => (
-                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} />
+                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} myRatings={myRatings} ratingsLoaded={ratingsLoaded} />
                       ))}
                     </div>
                   </>
@@ -507,7 +621,7 @@ const ShipperDashboard = () => {
                     <h2 className="section-heading section-heading--completed">Delivered</h2>
                     <div className="loads-grid">
                       {completedLoads.map((load) => (
-                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} />
+                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} myRatings={myRatings} ratingsLoaded={ratingsLoaded} />
                       ))}
                     </div>
                   </>
@@ -518,7 +632,7 @@ const ShipperDashboard = () => {
                     <h2 className="section-heading section-heading--completed">Cancelled</h2>
                     <div className="loads-grid">
                       {cancelledLoads.map((load) => (
-                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} />
+                        <ShipperLoadCard key={load._id} load={load} onReleased={fetchLoads} myRatings={myRatings} ratingsLoaded={ratingsLoaded} />
                       ))}
                     </div>
                   </>

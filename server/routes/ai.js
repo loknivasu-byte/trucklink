@@ -14,8 +14,9 @@ router.post('/chat', protect, async (req, res, next) => {
       return res.status(400).json({ message: 'Message is required.' });
     }
 
-    if (!process.env.CLAUDE_API_KEY) {
-      return res.status(503).json({ message: 'AI service is not configured.' });
+    const apiKey = process.env.CLAUDE_API_KEY;
+    if (!apiKey || apiKey.startsWith('your_')) {
+      return res.status(503).json({ message: 'AI service is not configured. Add your CLAUDE_API_KEY to server/.env to enable this feature.' });
     }
 
     // Slim down load objects so Claude's context stays small
