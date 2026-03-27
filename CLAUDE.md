@@ -28,7 +28,7 @@ Shippers post loads → Verified drivers accept → Payment released via escrow 
 ```bash
 # Terminal 1 — Backend
 cd ~/Desktop/TruckLink/server && npm run dev
-# Runs on http://localhost:5000
+# Runs on http://localhost:5001
 
 # Terminal 2 — Frontend
 cd ~/Desktop/TruckLink/client && npm run dev
@@ -40,8 +40,14 @@ cd ~/Desktop/TruckLink/client && npm run dev
 ## Environment
 
 - MongoDB: installed and running locally (`mongodb://localhost:27017/trucklink`)
-- Server: Node.js + Express on port 5000
+- Server: Node.js + Express on port **5001** (port 5000 is taken by macOS AirPlay Receiver)
 - Client: React + Vite on port 5173
+
+## Known Gotchas
+
+- **Port conflict**: macOS AirPlay Receiver occupies port 5000. TruckLink server runs on **5001**. `server/.env` has `PORT=5001` and `client/src/services/api.js` points to `localhost:5001`.
+- **Seed before first login**: The database must be seeded before any login works. Run `cd server && npm run seed` once after a fresh clone or after `npm run seed` wipes old data.
+- **Rate limiter**: Auth routes are limited to 10 requests per 15 minutes per IP. If you hit the limit during testing, restart the server to reset the in-memory store.
 
 ---
 

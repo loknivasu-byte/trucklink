@@ -31,9 +31,11 @@ Shippers post loads, verified drivers accept them, and payment is guaranteed thr
 ```bash
 cd server
 npm install
-npm run seed     # Populate sample data
-npm run dev      # Start on port 5000
+npm run seed     # Populate sample data (required before first login)
+npm run dev      # Start on port 5001
 ```
+
+> **Note:** macOS AirPlay Receiver occupies port 5000. TruckLink uses port **5001**.
 
 ### Frontend
 ```bash
