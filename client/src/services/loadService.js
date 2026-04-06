@@ -1,7 +1,8 @@
 import api from './api';
 
+// Returns the loads array directly (server now returns { loads, total, page, pages })
 export const getAvailableLoads = (filters = {}, signal) =>
-  api.get('/loads', { params: filters, signal }).then((r) => r.data);
+  api.get('/loads', { params: filters, signal }).then((r) => r.data.loads ?? r.data);
 
 export const getMyLoads = () => api.get('/loads/my').then((r) => r.data);
 

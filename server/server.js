@@ -62,7 +62,12 @@ app.use((err, req, res, next) => {
     const field = Object.keys(err.keyValue || {})[0] || 'field';
     return res.status(409).json({ message: `Duplicate value for ${field}` });
   }
-  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+  // In production, never expose raw internal error messages to clients
+  const isProduction = process.env.NODE_ENV === 'production';
+  const clientMessage = isProduction && !err.status
+    ? 'Internal server error'
+    : (err.message || 'Internal server error');
+  res.status(err.status || 500).json({ message: clientMessage });
 });
 
 const PORT = process.env.PORT || 5000;

@@ -1,17 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const Anthropic = require('@anthropic-ai/sdk');
+const rateLimit = require('express-rate-limit');
 const { protect } = require('../middleware/authMiddleware');
 
 const client = new Anthropic({ apiKey: process.env.CLAUDE_API_KEY });
 
+// Rate limiter: 20 AI requests per 10 minutes per IP
+const aiLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 20,
+  message: { message: 'Too many AI requests. Please wait a few minutes before trying again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const MAX_MESSAGE_LENGTH = 500;
+const MAX_LOADS_IN_REQUEST = 100;
+
 // POST /api/ai/chat — AI load matching via Claude
-router.post('/chat', protect, async (req, res, next) => {
+router.post('/chat', protect, aiLimiter, async (req, res, next) => {
   try {
-    const { message, loads = [] } = req.body;
+    const { message } = req.body;
+    const loads = Array.isArray(req.body.loads) ? req.body.loads.slice(0, MAX_LOADS_IN_REQUEST) : [];
 
     if (!message?.trim()) {
       return res.status(400).json({ message: 'Message is required.' });
+    }
+    if (message.trim().length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({ message: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer.` });
     }
 
     const apiKey = process.env.CLAUDE_API_KEY;

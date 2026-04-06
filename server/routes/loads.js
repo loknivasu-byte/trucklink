@@ -11,17 +11,26 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 router.get('/', protect, async (req, res, next) => {
   try {
     const { pickupCity, deliveryCity, truckType } = req.query;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
     const filter = { status: 'available' };
 
     if (pickupCity) filter.pickupCity = new RegExp(escapeRegex(pickupCity), 'i');
     if (deliveryCity) filter.deliveryCity = new RegExp(escapeRegex(deliveryCity), 'i');
     if (truckType) filter.truckType = truckType;
 
-    const loads = await Load.find(filter)
-      .populate('shipper', 'name companyName rating')
-      .sort({ createdAt: -1 });
+    const [loads, total] = await Promise.all([
+      Load.find(filter)
+        .populate('shipper', 'name companyName rating')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Load.countDocuments(filter),
+    ]);
 
-    res.json(loads);
+    res.json({ loads, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
     next(err);
   }
@@ -94,6 +103,33 @@ router.post('/', protect, requireRole('shipper'), async (req, res, next) => {
     }
     if (miles <= 0 || ratePerMile <= 0 || weight <= 0) {
       return res.status(400).json({ message: 'Miles, rate per mile, and weight must be positive numbers' });
+    }
+    // Enforce reasonable upper bounds to prevent data integrity issues
+    if (miles > 10000) {
+      return res.status(400).json({ message: 'Miles cannot exceed 10,000' });
+    }
+    if (ratePerMile > 50) {
+      return res.status(400).json({ message: 'Rate per mile cannot exceed $50' });
+    }
+    if (weight > 80000) {
+      return res.status(400).json({ message: 'Weight cannot exceed 80,000 lbs (federal limit)' });
+    }
+    // Pickup date must not be in the past (allow same day)
+    const pickupDateObj = new Date(pickupDate);
+    if (isNaN(pickupDateObj.getTime())) {
+      return res.status(400).json({ message: 'Invalid pickup date' });
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (pickupDateObj < today) {
+      return res.status(400).json({ message: 'Pickup date cannot be in the past' });
+    }
+    // Trim and cap string fields
+    if (commodity.length > 100) {
+      return res.status(400).json({ message: 'Commodity must be 100 characters or fewer' });
+    }
+    if (specialInstructions && specialInstructions.length > 500) {
+      return res.status(400).json({ message: 'Special instructions must be 500 characters or fewer' });
     }
 
     const totalPay = parseFloat((miles * ratePerMile).toFixed(2));

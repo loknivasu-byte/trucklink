@@ -12,16 +12,28 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // POST /api/auth/register
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password, role, companyName, cdlNumber, truckType, currentLocation } = req.body;
+    const { name, password, role, companyName, cdlNumber, truckType, currentLocation } = req.body;
+    const email = req.body.email?.toLowerCase().trim();
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Name, email, password, and role are required' });
+    }
+    // Prevent self-registration as owner (admin role must be seeded directly)
+    if (!['driver', 'shipper'].includes(role)) {
+      return res.status(400).json({ message: 'Role must be either driver or shipper' });
     }
     if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
     if (password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+    // bcrypt silently truncates at 72 bytes — cap here to avoid misleading users
+    if (password.length > 72) {
+      return res.status(400).json({ message: 'Password must be 72 characters or fewer' });
+    }
+    if (name.length > 100) {
+      return res.status(400).json({ message: 'Name must be 100 characters or fewer' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -59,13 +71,18 @@ router.post('/register', async (req, res, next) => {
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password, role } = req.body;
+    const { password, role } = req.body;
+    const email = req.body.email?.toLowerCase().trim();
 
     if (!email || !password || !role) {
       return res.status(400).json({ message: 'Email, password, and role are required' });
     }
     if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+    // Guard against bcrypt DoS via extremely long passwords
+    if (password.length > 72) {
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const user = await User.findOne({ email });

@@ -8,8 +8,9 @@ const { protect } = require('../middleware/authMiddleware');
 // Returns limited public fields only — no password, no email
 router.get('/:id', protect, async (req, res, next) => {
   try {
+    // totalEarnings is private financial data — excluded from public profiles
     const user = await User.findById(req.params.id).select(
-      'name companyName role trustScore rating totalDeliveries totalEarnings createdAt'
+      'name companyName role trustScore rating totalDeliveries createdAt'
     );
     if (!user) return res.status(404).json({ message: 'User not found' });
 
